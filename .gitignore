@@ -163,11 +163,6 @@ cython_debug/
 
 
 # ChatPPT custom config
-outputs/*.pptx
-test/*
+outputs/*
+tests/*
 .DS_STore
-jupyter/*.pptx
-.gradio/*
-nohup.out
-images/*
-test_results.txt
