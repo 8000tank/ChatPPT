@@ -27,9 +27,7 @@ def generate_contents(message, history):
         # 初始化一个列表，用于收集用户输入的文本和音频转录
         texts = []
 
-        # 获取文本输入，如果存在则添加到列表
-        text_input = message.get("text")
-        if text_input:
+        if text_input := message.get("text"):
             texts.append(text_input)
 
         # 获取上传的文件列表，如果存在则处理每个文件
@@ -48,15 +46,12 @@ def generate_contents(message, history):
         user_requirement = "需求如下:\n" + "\n".join(texts)
         LOG.info(user_requirement)
 
-        # 与聊天机器人进行对话，生成幻灯片内容
-        slides_content = chatbot.chat_with_history(user_requirement)
-
-        return slides_content
+        return chatbot.chat_with_history(user_requirement)
     except Exception as e:
         LOG.error(f"[内容生成错误]: {e}")
         # 抛出 Gradio 错误，以便在界面上显示友好的错误信息
-        raise gr.Error(f"网络问题，请重试:)")
-        
+        raise gr.Error("网络问题，请重试:)") from e
+
 
 # 定义处理生成按钮点击事件的函数
 def handle_generate(history):
@@ -67,14 +62,15 @@ def handle_generate(history):
         powerpoint_data, presentation_title = parse_input_text(slides_content, layout_manager)
         # 定义输出的 PowerPoint 文件路径
         output_pptx = f"outputs/{presentation_title}.pptx"
-        
+
         # 生成 PowerPoint 演示文稿
         generate_presentation(powerpoint_data, config.ppt_template, output_pptx)
         return output_pptx
     except Exception as e:
         LOG.error(f"[PPT 生成错误]: {e}")
         # 提示用户先输入主题内容或上传文件
-        raise gr.Error(f"【提示】请先输入你的主题内容或上传文件")
+        raise gr.Error("【提示】请先输入你的主题内容或上传文件") from e
+
 
 # 创建 Gradio 界面
 with gr.Blocks(
@@ -89,14 +85,14 @@ with gr.Blocks(
     gr.Markdown("## ChatPPT")
 
     # 定义语音（mic）转文本的接口
-    # gr.Interface(
-    #     fn=transcribe,  # 执行转录的函数
-    #     inputs=[
-    #         gr.Audio(sources="microphone", type="filepath"),  # 使用麦克风录制的音频输入
-    #     ],
-    #     outputs="text",  # 输出为文本
-    #     flagging_mode="never",  # 禁用标记功能
-    # )
+    gr.Interface(
+        fn=transcribe,  # 执行转录的函数
+        inputs=[
+            gr.Audio(sources="microphone", type="filepath"),  # 使用麦克风录制的音频输入
+        ],
+        outputs="text",  # 输出为文本
+        flagging_mode="never",  # 禁用标记功能
+    )
 
     # 创建聊天机器人界面，提示用户输入
     contents_chatbot = gr.Chatbot(
@@ -129,5 +125,5 @@ if __name__ == "__main__":
     demo.queue().launch(
         share=False,
         server_name="0.0.0.0",
-        # auth=("django", "1234") # ⚠️注意：记住修改密码
+        auth=("oceanus", "ww123456")  # ⚠️注意：记住修改密码
     )
