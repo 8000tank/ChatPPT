@@ -11,7 +11,7 @@ with open("prompts/formatter.txt", "r", encoding="utf-8") as f:
     FORMATTER_PROMPT = f.read()
 
 # 配置LangChain
-model = ChatOpenAI(model="gpt-4-mini")
+model = ChatOpenAI(model="gpt-4o-mini")
 prompt = ChatPromptTemplate.from_template(FORMATTER_PROMPT + "\n{text}")
 chain = prompt | model | StrOutputParser()
 
@@ -29,10 +29,10 @@ def chat_and_format(text, history):
     with open(filename, "w", encoding="utf-8") as f:
         f.write(md_content)
 
-    # 更新对话历史和下拉框
+    # 更新对话历史和下拉框，并清空输入框
     return (
-        text,  # 用户输入
-        history + [(text, "已将输入内容转为md格式")],  # 更新对话历史
+        "",  # 清空输入框
+        history + [(text, "已将输入内容转为md格式文件")],  # 更新对话历史
         gr.Dropdown(choices=get_md_files(), value=filename)  # 更新下拉框
     )
 
@@ -69,11 +69,11 @@ with gr.Blocks() as demo:
     with gr.Row():
         md_dropdown = gr.Dropdown(
             choices=get_md_files(),
-            label="选择md内容",
+            label="选择md文件",
             interactive=True,
             value=None
         )
-        generate_btn = gr.Button("生成PPT")
+        generate_btn = gr.Button("由md文件生成PPT")
 
     output = gr.File(label="生成的PPT")
 
