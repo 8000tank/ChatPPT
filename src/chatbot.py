@@ -15,9 +15,10 @@ class ChatBot(ABC):
     """
     聊天机器人基类，提供聊天功能。
     """
+
     def __init__(self, prompt_file="./prompts/chatbot.txt", session_id=None):
         self.prompt_file = prompt_file
-        self.session_id = session_id if session_id else "default_session_id"
+        self.session_id = session_id or "default_session_id"
         self.prompt = self.load_prompt()
         # LOG.debug(f"[ChatBot Prompt]{self.prompt}")
         self.create_chatbot()
@@ -29,9 +30,8 @@ class ChatBot(ABC):
         try:
             with open(self.prompt_file, "r", encoding="utf-8") as file:
                 return file.read().strip()
-        except FileNotFoundError:
-            raise FileNotFoundError(f"找不到提示文件 {self.prompt_file}!")
-
+        except FileNotFoundError as e:
+            raise FileNotFoundError(f"找不到提示文件 {self.prompt_file}!") from e
 
     def create_chatbot(self):
         """
@@ -53,7 +53,6 @@ class ChatBot(ABC):
         # 将聊天机器人与消息历史记录关联
         self.chatbot_with_history = RunnableWithMessageHistory(self.chatbot, get_session_history)
 
-
     def chat_with_history(self, user_input, session_id=None):
         """
         处理用户输入，生成包含聊天历史的回复。
@@ -67,7 +66,7 @@ class ChatBot(ABC):
         """
         if session_id is None:
             session_id = self.session_id
-    
+
         response = self.chatbot_with_history.invoke(
             [HumanMessage(content=user_input)],  # 将用户输入封装为 HumanMessage
             {"configurable": {"session_id": session_id}},  # 传入配置，包括会话ID

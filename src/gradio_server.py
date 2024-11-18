@@ -19,7 +19,7 @@ from docx_parser import generate_markdown_from_docx
 
 
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
-os.environ["LANGCHAIN_PROJECT"] = "ChatPPT"
+os.environ["LANGCHAIN_PROJECT"] = "ChatPPT_homework4"
 
 # 实例化 Config，加载配置文件
 config = Config()
@@ -41,9 +41,7 @@ def generate_contents(message, history):
         # 初始化一个列表，用于收集用户输入的文本和音频转录
         texts = []
 
-        # 获取文本输入，如果存在则添加到列表
-        text_input = message.get("text")
-        if text_input:
+        if text_input := message.get("text"):
             texts.append(text_input)
 
         # 获取上传的文件列表，如果存在则处理每个文件
@@ -75,15 +73,12 @@ def generate_contents(message, history):
         user_requirement = "需求如下:\n" + "\n".join(texts)
         LOG.info(user_requirement)
 
-        # 与聊天机器人进行对话，生成幻灯片内容
-        slides_content = chatbot.chat_with_history(user_requirement)
-
-        return slides_content
+        return chatbot.chat_with_history(user_requirement)
     except Exception as e:
         LOG.error(f"[内容生成错误]: {e}")
         # 抛出 Gradio 错误，以便在界面上显示友好的错误信息
-        raise gr.Error(f"网络问题，请重试:)")
-        
+        raise gr.Error("网络问题，请重试:)") from e
+
 
 def handle_image_generate(history):
     try:
@@ -91,7 +86,7 @@ def handle_image_generate(history):
         slides_content = history[-1]["content"]
 
         content_with_images, image_pair = image_advisor.generate_images(slides_content)
-        
+
         # for k, v in image_pair.items():
         #     history.append(
         #         # {"text": k, "files": FileData(path=v)}
@@ -106,9 +101,11 @@ def handle_image_generate(history):
     except Exception as e:
         LOG.error(f"[配图生成错误]: {e}")
         # 提示用户先输入主题内容或上传文件
-        raise gr.Error(f"【提示】未找到合适配图，请重试！")
+        raise gr.Error("【提示】未找到合适配图，请重试！") from e
 
 # 定义处理生成按钮点击事件的函数
+
+
 def handle_generate(history):
     try:
         # 获取聊天记录中的最新内容
@@ -117,14 +114,15 @@ def handle_generate(history):
         powerpoint_data, presentation_title = parse_input_text(slides_content, layout_manager)
         # 定义输出的 PowerPoint 文件路径
         output_pptx = f"outputs/{presentation_title}.pptx"
-        
+
         # 生成 PowerPoint 演示文稿
         generate_presentation(powerpoint_data, config.ppt_template, output_pptx)
         return output_pptx
     except Exception as e:
         LOG.error(f"[PPT 生成错误]: {e}")
         # 提示用户先输入主题内容或上传文件
-        raise gr.Error(f"【提示】请先输入你的主题内容或上传文件")
+        raise gr.Error("【提示】请先输入你的主题内容或上传文件") from e
+
 
 # 创建 Gradio 界面
 with gr.Blocks(
